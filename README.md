@@ -12,7 +12,7 @@ IoT devices trigger which Lambda functions.
 
 ## Installation
 
-1. Run: `npm i github.com/copperinc/macro-iot-rules`
+1. Run: `npm i copperinc/macro-iot-rules`
 
 2. Then add the following line to the `@macros` pragma in your Architect project manifest (usually `app.arc`):
 
