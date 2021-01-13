@@ -41,4 +41,22 @@ IoT devices trigger which Lambda functions.
 6. Edit each rule Lambda's `index.js` file, just as you would any classic arc
    `@http`, `@events`, etc. function.
 
+## Sample Application
+
+There is a sample application located under `sample-app/`. `cd` into that
+directory and you can directly deploy using `arc deploy`.
+
+To test the application out:
+
+1. Head to the [IoT Core Console's MQTT Test Page](https://us-west-1.console.aws.amazon.com/iot/home?region=us-west-1#/test)
+   (sometimes, soon after deployment, this test console will not be ready as a red
+   banner will inform you; if you find that, give it a few minutes and refresh the
+   page).
+2. Click "Publish to a topic."
+3. In the topic input field, enter 'hithere' (it should match the `FROM` clause
+   of the `@rules` section of `app.arc`). Optionally, customize the message
+   payload.
+4. Load the deployed URL of the app, and a list of all messages sent to the
+   `hithere` topic should be displayed.
+
 [sql]: https://docs.aws.amazon.com/iot/latest/developerguide/iot-sql-reference.html
