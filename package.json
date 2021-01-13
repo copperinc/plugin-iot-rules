@@ -1,6 +1,6 @@
 {
   "name": "macro-iot-rules",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Architect (arc.codes) serverless framework macro that defines IoT Topic Rules and associated Lambdas triggered by the Rules",
   "main": "index.js",
   "scripts": {
