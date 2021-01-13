@@ -17,7 +17,7 @@ IoT devices trigger which Lambda functions.
 2. Then add the following line to the `@macros` pragma in your Architect project manifest (usually `app.arc`):
 
         @macros
-        copperinc/macro-iot-rules
+        macro-iot-rules
 
 3. Add a new `@rules` pragma, and add any number of IoT rules by giving it a name
    as the first word (the following characters are allowed in names: `[a-zA-Z0-9_-]`).

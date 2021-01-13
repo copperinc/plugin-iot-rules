@@ -10,11 +10,37 @@
     "type": "git",
     "url": "git+https://github.com/copperinc/macro-iot-rules.git"
   },
-  "keywords": ["serverless", "arc", "cloudformation"],
+  "keywords": [
+    "serverless",
+    "arc",
+    "cloudformation"
+  ],
   "author": "Copper Inc.",
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/copperinc/macro-iot-rules/issues"
   },
-  "homepage": "https://github.com/copperinc/macro-iot-rules#readme"
+  "homepage": "https://github.com/copperinc/macro-iot-rules#readme",
+  "devDependencies": {
+    "@architect/eslint-config": "^1.0.0",
+    "eslint": "^7.17.0"
+  },
+  "eslintConfig": {
+    "extends": "@architect/eslint-config",
+    "rules": {
+      "indent": [
+        "error",
+        4
+      ],
+      "semi": [
+        "error",
+        "always"
+      ]
+    }
+  },
+  "dependencies": {
+    "@architect/inventory": "^1.2.2",
+    "@architect/package": "^6.0.4",
+    "@architect/utils": "^2.0.4"
+  }
 }
