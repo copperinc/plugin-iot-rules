@@ -54,6 +54,12 @@ module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */)
 };
 
 module.exports.create = function IoTRulesCreate (inventory) {
-    console.log('macro create func', JSON.stringify(inventory, null, 2));
-    return [];
+    return inventory.inv._project.arc.rules.map((rule) => {
+        return {
+            src: `./src/rules/${rule[0]}`,
+            body: `exports.handler = async function (event) {
+  console.log(event);
+};`
+        };
+    });
 };
