@@ -30,21 +30,17 @@ IoT devices trigger which Lambda functions.
         disconnect-device SELECT * FROM '$aws/events/presence/disconnected/+'
         report-device-state SELECT clientid() as clientId, principal() as principalIdentifier, state.reported as state from '$aws/things/+/shadow/update'
 
-4. Create a folder under `src/rules` for each added rule, matching the name of your
-   rule. Following the example from the last step, we would create the folders
-   `src/rules/connect-device`, `src/rules/disconnect-device` and
-   `src/rules/report-device-state`.
+4. Run `arc create` to generate your IoT Rule Lambda functions (under
+   `src/rules`) based on the rules you added to your `app.arc` file under the `@rules`
+   pragma.
 
-5. Copy the files from this repo's `example-lambda/` folder into each
-   `src/rules/*` subdirectory.
-
-6. Edit each rule Lambda's `index.js` file, just as you would any classic arc
+5. Edit each rule Lambda's `index.js` file, just as you would any classic arc
    `@http`, `@events`, etc. function.
 
 ## Sample Application
 
 There is a sample application located under `sample-app/`. `cd` into that
-directory and you can directly deploy using `arc deploy`.
+directory, `npm install` and you can directly deploy using `arc deploy`.
 
 To test the application out:
 
