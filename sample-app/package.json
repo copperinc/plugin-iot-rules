@@ -4,13 +4,13 @@
   "description": "",
   "main": "test.js",
   "dependencies": {
-    "@architect/architect": "^8.4.5",
-    "macro-iot-rules": "github:copperinc/macro-iot-rules"
+    "@architect/architect": "github:copperinc/architect#plugins",
+    "macro-iot-rules": "github:copperinc/macro-iot-rules#plugins"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Copper Inc.",
   "license": "ISC"
 }

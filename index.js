@@ -52,3 +52,8 @@ module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */)
     }
     return cfn;
 };
+
+module.exports.create = function IoTRulesCreate (inventory) {
+    console.log('macro create func', JSON.stringify(inventory, null, 2));
+    return [];
+};
