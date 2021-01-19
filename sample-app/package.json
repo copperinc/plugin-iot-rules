@@ -4,7 +4,7 @@
   "description": "",
   "main": "test.js",
   "dependencies": {
-    "@architect/architect": "github:copperinc/architect#1537607",
+    "@architect/architect": "github:copperinc/architect#9981d0d",
     "macro-iot-rules": "github:copperinc/macro-iot-rules#plugins"
   },
   "devDependencies": {},
