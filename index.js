@@ -64,3 +64,13 @@ module.exports.create = function IoTRulesCreate (inventory) {
         };
     });
 };
+
+module.exports.start = function IoTRulesServiceStart (callback) {
+    console.log('iot sandbox service started!');
+    callback();
+};
+
+module.exports.end = function IoTRulesServiceEnd (callback) {
+    console.log('iot sandbox service ended!');
+    callback();
+};
