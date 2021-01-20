@@ -40,14 +40,14 @@ module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */)
                     config: functionConfig
                 }
             });
-            functionDefn.Properties.Events[`${name}Event`] = {
+            functionDefn.Properties.Events[`${name}MacroEvent`] = {
                 Type: 'IoTRule',
                 Properties: {
                     AwsIotSqlVersion: '2016-03-23',
                     Sql: query
                 }
             };
-            cfn.Resources[name] = functionDefn;
+            cfn.Resources[`${name}MacroLambda`] = functionDefn;
         });
     }
     return cfn;
@@ -57,6 +57,7 @@ module.exports.create = function IoTRulesCreate (inventory) {
     return inventory.inv._project.arc.rules.map((rule) => {
         return {
             src: `./src/rules/${rule[0]}`,
+            name: rule[0],
             body: `exports.handler = async function (event) {
   console.log(event);
 };`
