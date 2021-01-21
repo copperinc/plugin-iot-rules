@@ -3,7 +3,9 @@ let { createLambda } = require('@architect/package/src/visitors/utils');
 let read = require('@architect/inventory/src/read');
 let defaultFunctionConfig = require('@architect/inventory/src/defaults/function-config');
 let { toLogicalID } = require('@architect/utils');
+let invokeLambda = require('@architect/sandbox/src/invoke-lambda');
 const { prompt } = require('enquirer');
+const { join } = require('path');
 
 module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */) {
     // modify main role to allow lambdas to publish to iot topics
@@ -26,14 +28,7 @@ module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */)
             let code = `./src/rules/${rule[0]}`;
             let name = toLogicalID(rule.shift());
             let query = rule.join(' ').trim();
-            // compile any per-function config.arc customizations
-            let defaults = defaultFunctionConfig();
-            let customizations = read({ type: 'functionConfig', cwd: code }).arc.aws;
-            let overrides = {};
-            for (let config of customizations) {
-                overrides[config[0]] = config[1];
-            }
-            let functionConfig = { ...defaults, ...overrides };
+            let functionConfig = getFunctionConfig(code);
             let functionDefn = createLambda({
                 inventory: appInv,
                 lambda: {
@@ -69,7 +64,7 @@ module.exports.create = function IoTRulesCreate (inventory) {
 module.exports.start = function IoTRulesServiceStart (inventory) {
     let rules = module.exports.create(inventory).map(rule => rule.src);
     return function IotRulesServiceStartCallback (callback) {
-        process.stdin.on('keypress', async function (input, key) {
+        process.stdin.on('keypress', async function IoTRulesKeyListener (input, key) {
             if (input === 'I') {
                 const response = await prompt([ {
                     type: 'select',
@@ -79,7 +74,7 @@ module.exports.start = function IoTRulesServiceStart (inventory) {
                 }, {
                     type: 'input',
                     name: 'payload',
-                    message: 'Type out the JSON payload you want to deliver to the rule.',
+                    message: 'Type out the JSON payload you want to deliver to the rule (must be valid JSON!):',
                     initial: '{}',
                     validate: function (i) {
                         try {
@@ -94,17 +89,49 @@ module.exports.start = function IoTRulesServiceStart (inventory) {
                         return JSON.parse(i);
                     }
                 } ]);
-                console.log('enquirer response', response);
+                // Workaround for enquirer to play nice with other stdin readers
+                if (process.stdin.isTTY) {
+                    process.stdin.setRawMode(true);
+                    process.stdin.resume();
+                }
+                // Assemble invocation params and use sandbox's own lambda
+                // invoker to trigger the lambda with an event
+                let lambdaInvocationParams = {
+                    lambda: {
+                        src: response.rule,
+                        config: getFunctionConfig(response.rule),
+                        _proxy: true // short circuits sandbox's lambda invocation handler checker
+                    },
+                    event: response.payload,
+                    inventory
+                };
+                invokeLambda(lambdaInvocationParams, function (err, result) {
+                    if (err) console.error(`Error invoking lambda ${response.rule}!`, err);
+                    else console.log(`${response.rule} invocation result:`, result);
+                });
             }
         });
-        console.log('iot sandbox service started!');
+        console.log('IoT Rules Sandbox Service Started; press "I" (capital letter) to trigger a rule.');
         callback();
     };
 };
 
 module.exports.end = function IoTRulesServiceEnd (inventory) {
     return function IoTRulesServiceEndCallback (callback) {
-        console.log('iot sandbox service ended!');
+        console.log('IoT Rules Sandbox Service shut down.');
         callback();
     };
 };
+
+// compile any per-function config.arc customizations
+function getFunctionConfig (dir) {
+    // compile any per-function config.arc customizations
+    let defaults = defaultFunctionConfig();
+    let customizations = read({ type: 'functionConfig', cwd: dir }).arc.aws;
+    let overrides = {};
+    for (let config of customizations) {
+        overrides[config[0]] = config[1];
+    }
+    return { ...defaults, ...overrides };
+}
+
