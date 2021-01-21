@@ -41,6 +41,7 @@
   "dependencies": {
     "@architect/inventory": "^1.2.2",
     "@architect/package": "^6.0.4",
-    "@architect/utils": "^2.0.4"
+    "@architect/utils": "^2.0.4",
+    "enquirer": "^2.3.6"
   }
 }

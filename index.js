@@ -3,6 +3,7 @@ let { createLambda } = require('@architect/package/src/visitors/utils');
 let read = require('@architect/inventory/src/read');
 let defaultFunctionConfig = require('@architect/inventory/src/defaults/function-config');
 let { toLogicalID } = require('@architect/utils');
+const { prompt } = require('enquirer');
 
 module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */) {
     // modify main role to allow lambdas to publish to iot topics
@@ -65,12 +66,45 @@ module.exports.create = function IoTRulesCreate (inventory) {
     });
 };
 
-module.exports.start = function IoTRulesServiceStart (callback) {
-    console.log('iot sandbox service started!');
-    callback();
+module.exports.start = function IoTRulesServiceStart (inventory) {
+    let rules = module.exports.create(inventory).map(rule => rule.src);
+    return function IotRulesServiceStartCallback (callback) {
+        process.stdin.on('keypress', async function (input, key) {
+            if (input === 'I') {
+                const response = await prompt([ {
+                    type: 'select',
+                    name: 'rule',
+                    message: 'Which IoT Rule do you want to trigger an event for?',
+                    choices: rules
+                }, {
+                    type: 'input',
+                    name: 'payload',
+                    message: 'Type out the JSON payload you want to deliver to the rule.',
+                    initial: '{}',
+                    validate: function (i) {
+                        try {
+                            JSON.parse(i);
+                        }
+                        catch (e) {
+                            return e.message;
+                        }
+                        return true;
+                    },
+                    result: function (i) {
+                        return JSON.parse(i);
+                    }
+                } ]);
+                console.log('enquirer response', response);
+            }
+        });
+        console.log('iot sandbox service started!');
+        callback();
+    };
 };
 
-module.exports.end = function IoTRulesServiceEnd (callback) {
-    console.log('iot sandbox service ended!');
-    callback();
+module.exports.end = function IoTRulesServiceEnd (inventory) {
+    return function IoTRulesServiceEndCallback (callback) {
+        console.log('iot sandbox service ended!');
+        callback();
+    };
 };
