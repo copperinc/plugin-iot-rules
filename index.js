@@ -50,9 +50,13 @@ module.exports = async function macroIotRules (arc, cfn /* , stage='staging' */)
 };
 
 module.exports.create = function IoTRulesCreate (inventory) {
+    const cwd = inventory.inv._project.src
     return inventory.inv._project.arc.rules.map((rule) => {
+        let rulesSrc = join(cwd, 'src', 'rules', rule[0])
+        let functionConfig = getFunctionConfig(rulesSrc)
         return {
-            src: `./src/rules/${rule[0]}`,
+            src: rulesSrc,
+            config: functionConfig,
             name: rule[0],
             body: `exports.handler = async function (event) {
   console.log(event);
