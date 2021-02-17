@@ -130,7 +130,9 @@ module.exports.end = function IoTRulesServiceEnd (inventory) {
 function getFunctionConfig (dir) {
     // compile any per-function config.arc customizations
     let defaults = defaultFunctionConfig();
-    let customizations = read({ type: 'functionConfig', cwd: dir }).arc.aws;
+    let existingConfig = read({ type: 'functionConfig', cwd: dir });
+    let customizations = [];
+    if (existingConfig.arc) customizations = existingConfig.arc.aws || [];
     let overrides = {};
     for (let config of customizations) {
         overrides[config[0]] = config[1];
