@@ -1,14 +1,16 @@
 {
-  "name": "macro-iot-rules",
+  "name": "@copper/plugin-iot-rules",
   "version": "1.0.0",
-  "description": "Architect (arc.codes) serverless framework macro that defines IoT Topic Rules and associated Lambdas triggered by the Rules",
+  "description": "Architect (arc.codes) serverless framework plugin that defines IoT Topic Rules and associated Lambdas triggered by the Rules",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "eslint",
+    "test:unit": "jasmine --config=test/jasmine.json",
+    "test": "npm run lint && npm run test:unit"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/copperinc/macro-iot-rules.git"
+    "url": "git+https://github.com/copperinc/plugin-iot-rules.git"
   },
   "keywords": [
     "serverless",
@@ -18,12 +20,18 @@
   "author": "Copper Inc.",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/copperinc/macro-iot-rules/issues"
+    "url": "https://github.com/copperinc/plugin-iot-rules/issues"
   },
-  "homepage": "https://github.com/copperinc/macro-iot-rules#readme",
+  "homepage": "https://github.com/copperinc/plugin-iot-rules#readme",
   "devDependencies": {
     "@architect/eslint-config": "^1.0.0",
-    "eslint": "^7.17.0"
+    "eslint": "^7.19.0",
+    "jasmine": "^3.6.4"
+  },
+  "dependencies": {
+    "@architect/package": "^6.2.0-RC.0",
+    "@architect/sandbox": "^3.4.0-RC.0",
+    "enquirer": "^2.3.6"
   },
   "eslintConfig": {
     "extends": "@architect/eslint-config",
@@ -38,11 +46,7 @@
       ]
     }
   },
-  "dependencies": {
-    "@architect/inventory": "^1.2.2",
-    "@architect/package": "^6.0.4",
-    "@architect/sandbox": "^3.3.5",
-    "@architect/utils": "^2.0.4",
-    "enquirer": "^2.3.6"
+  "publishConfig": {
+    "access": "public"
   }
 }

@@ -8,8 +8,8 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
   "dependencies": {
-    "@architect/functions": "^3.13.8"
-  }
+    "@architect/functions": "^3.13.9"
+  },
+  "license": "ISC"
 }

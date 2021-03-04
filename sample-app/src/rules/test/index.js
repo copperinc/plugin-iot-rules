@@ -1,12 +1,7 @@
 let arc = require('@architect/functions');
 
-exports.handler = async (event) => {
-    console.log('IoT Rule "Test" received event:', event);
+exports.handler = async function (event) {
+    console.log('Test IoT Topic Event:', event);
     let tables = await arc.tables();
-    let data = tables.data;
-    await data.put({
-        dateval: new Date().valueOf(),
-        type: 'test',
-        ... event
-    });
+    await tables.data.put({ dateval: new Date().valueOf(), ... event });
 };

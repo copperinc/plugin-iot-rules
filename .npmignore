@@ -1,7 +1,3 @@
-.DS_Store
-.eslintignore
-.eslintrc.js
-.github
-contributing.md
-test/
 sample-app
+.github
+test/

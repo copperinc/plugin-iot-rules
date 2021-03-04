@@ -1,5 +1,5 @@
 @app
-macro-iot-rules-demo
+plugin-iot-rules-demo
 
 @http
 get /
@@ -14,5 +14,5 @@ data
 @rules
 test SELECT * FROM 'hithere'
 
-@macros
-macro-iot-rules
+@plugins
+copper/plugin-iot-rules
