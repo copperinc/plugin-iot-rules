@@ -20,8 +20,8 @@ describe('plugin packaging function', () => {
         arc = inv.inv._project.arc;
     });
     afterAll(async () => {
-        await fs.remove(appDir);
         process.chdir(originalCwd);
+        await fs.remove(appDir);
     });
     describe('when not present in project', () => {
         it('should not modify the CloudFormation JSON', () => {
