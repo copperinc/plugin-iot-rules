@@ -4,7 +4,7 @@ const { prompt } = require('enquirer');
 const { join } = require('path');
 
 module.exports = {
-    package: function macroIotRules (arc, cfn, stage = 'staging', inventory) {
+    package: function macroIotRules ({ arc, cloudformation: cfn, /* stage = 'staging',*/ inventory }) {
         if (arc.rules) {
             const cwd = inventory.inv._project.src;
             // modify main role to allow lambdas to publish to iot topics
@@ -25,7 +25,7 @@ module.exports = {
                 let ruleName = rule.shift();
                 let code = join(cwd, 'src', 'rules', ruleName);
                 let query = rule.join(' ').trim();
-                let [ functionName, functionDefn ] = createLambdaJSON(inventory, code);
+                let [ functionName, functionDefn ] = createLambdaJSON({ inventory, src: code });
                 functionDefn.Properties.Events[`${functionName}PluginEvent`] = {
                     Type: 'IoTRule',
                     Properties: {
@@ -38,7 +38,7 @@ module.exports = {
         }
         return cfn;
     },
-    pluginFunctions: function IoTRulesCreate (arc, inventory) {
+    pluginFunctions: function IoTRulesCreate ({ arc, inventory }) {
         if (!arc.rules) return [];
         const cwd = inventory.inv._project.src;
         return arc.rules.map((rule) => {
@@ -52,15 +52,15 @@ module.exports = {
         });
     },
     sandbox: {
-        start: function IoTRulesServiceStart (arc, inventory, builtInServices, callback) {
-            let rules = module.exports.pluginFunctions(arc, inventory).map(rule => rule.src);
+        start: function IoTRulesServiceStart ({ arc, inventory /* , services */ }, callback) {
+            let rules = module.exports.pluginFunctions({ arc, inventory }).map(rule => rule.src);
             if (rules && rules.length) {
                 process.stdin.once('readable', listener(rules, inventory));
                 console.log(`IoT Rules Sandbox Service Started, registered ${rules.length} rule(s); press "i" to trigger a rule.`);
             }
             callback();
         },
-        end: function IoTRulesServiceEnd (arc, inventory, builtInServices, callback) {
+        end: function IoTRulesServiceEnd (/* { arc, inventory, services }*/ _,  callback) {
             console.log('IoT Rules Sandbox Service shut down.');
             callback();
         }
@@ -99,7 +99,8 @@ function listener (rules, inventory) {
                 process.stdin.setRawMode(true);
                 process.stdin.resume();
             }
-            invokeLambda(inventory, response.rule, response.payload, function (err) {
+            console.log('invoking', response.rule)
+            invokeLambda({ inventory, src: response.rule, payload: response.payload }, function (err) {
                 if (err) console.error(`Error invoking lambda ${response.rule}!`, err);
             });
         }

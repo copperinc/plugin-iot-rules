@@ -28,13 +28,13 @@ describe('plugin packaging function', () => {
             const cfn = {};
             const app = { ...arc };
             delete app.rules;
-            const output = plugin.package(app, cfn);
+            const output = plugin.package({ arc: app, cloudformation: cfn });
             expect(JSON.stringify(output)).toBe('{}');
         });
     });
     describe('when present in project', () => {
         it('should create a lambda function definition for each rule defined in the arc manifest', () => {
-            const cfn = {
+            const cloudformation = {
                 Resources: {
                     Role: {
                         Properties: {
@@ -44,7 +44,7 @@ describe('plugin packaging function', () => {
                 }
             };
             const app = { ...arc };
-            const output = plugin.package(app, cfn, 'staging', inv);
+            const output = plugin.package({ arc: app, cloudformation, inventory: inv, stage: 'staging' });
             expect(output.Resources.RulesTestPluginLambda).toBeDefined();
             expect(output.Resources.RulesTestPluginLambda.Properties.Events.RulesTestPluginLambdaPluginEvent).toBeDefined();
             expect(output.Resources.RulesTestPluginLambda.Properties.Events.RulesTestPluginLambdaPluginEvent.Type).toEqual('IoTRule');
