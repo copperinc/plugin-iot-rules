@@ -1,10 +1,12 @@
 let createLambdaJSON = require('@architect/package/createLambdaJSON');
 let invokeLambda = require('@architect/sandbox/invokeLambda');
+let { updater } = require('@architect/utils');
 const { prompt } = require('enquirer');
 const { join } = require('path');
+let update = updater('IoT Rules', {});
 
 module.exports = {
-    package: function macroIotRules ({ arc, cloudformation: cfn, /* stage = 'staging',*/ inventory }) {
+    package: function iotRulesPackage ({ arc, cloudformation: cfn, /* stage = 'staging',*/ inventory }) {
         if (arc.rules) {
             const cwd = inventory.inv._project.src;
             // modify main role to allow lambdas to publish to iot topics
@@ -38,7 +40,7 @@ module.exports = {
         }
         return cfn;
     },
-    pluginFunctions: function IoTRulesCreate ({ arc, inventory }) {
+    pluginFunctions: function ioTRulesLambdas ({ arc, inventory }) {
         if (!arc.rules) return [];
         const cwd = inventory.inv._project.src;
         return arc.rules.map((rule) => {
@@ -55,19 +57,24 @@ module.exports = {
         start: function IoTRulesServiceStart ({ arc, inventory /* , services */ }, callback) {
             let rules = module.exports.pluginFunctions({ arc, inventory }).map(rule => rule.src);
             if (rules && rules.length) {
+                // Attach the key listener only once because this plugin's
+                // sandbox hook requires interactive user input, and if the user
+                // type's another 'i' key, it would trigger the listener again.
+                // So listen to the event once, then at the end of the listener,
+                // re-attach itself once again.
                 process.stdin.once('readable', listener(rules, inventory));
-                console.log(`IoT Rules Sandbox Service Started, registered ${rules.length} rule(s); press "i" to trigger a rule.`);
+                update.status(`IoT Rules Sandbox Service Started, registered ${rules.length} rule(s); press "i" to trigger a rule.`);
             }
             callback();
         },
         end: function IoTRulesServiceEnd (/* { arc, inventory, services }*/ _,  callback) {
-            console.log('IoT Rules Sandbox Service shut down.');
             callback();
         }
     }
 };
 
 function listener (rules, inventory) {
+    const cwd = inventory.inv._project.src;
     return async function IoTRulesKeyListener () {
         let input = String(process.stdin.read());
         if (input === 'i') {
@@ -99,12 +106,14 @@ function listener (rules, inventory) {
                 process.stdin.setRawMode(true);
                 process.stdin.resume();
             }
-            console.log('invoking', response.rule)
             invokeLambda({ inventory, src: response.rule, payload: response.payload }, function (err) {
-                if (err) console.error(`Error invoking lambda ${response.rule}!`, err);
+                if (err) {
+                    update.error(`Error invoking ${response.rule.replace(cwd, '')}!`);
+                    update.error(err);
+                }
             });
         }
-        // Re-attach the listener after the lambda is dispatched
+        // Re-attach the iot-rules key listener after the lambda is dispatched
         process.stdin.once('readable', listener(rules, inventory));
     };
 }

@@ -33,6 +33,7 @@
   "dependencies": {
     "@architect/package": "^6.2.0-RC.1",
     "@architect/sandbox": "^3.4.0-RC.2",
+    "@architect/utils": "^2.0.5-RC.0",
     "enquirer": "^2.3.6"
   },
   "eslintConfig": {
