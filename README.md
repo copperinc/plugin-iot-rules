@@ -77,9 +77,9 @@ The sample application is ready deploy to staging via `arc deploy`. Then:
 4. Load the deployed URL of the app, and a list of all messages sent to the
    `hithere` topic should be displayed.
 
-[sql]: https://docs.aws.amazon.com/iot/latest/developerguide/iot-sql-reference.html
-
 # Contributing
 
 Thanks for considering contributing to this project! Check out the
 [contribution guidelines](CONTRIBUTING.md) for details.
+
+[sql]: https://docs.aws.amazon.com/iot/latest/developerguide/iot-sql-reference.html

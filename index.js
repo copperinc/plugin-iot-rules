@@ -1,46 +1,10 @@
-let createLambdaJSON = require('@architect/package/createLambdaJSON');
-let invokeLambda = require('@architect/sandbox/invokeLambda');
 let { updater } = require('@architect/utils');
 const { prompt } = require('enquirer');
 const { join } = require('path');
 let update = updater('IoT Rules', {});
 
 module.exports = {
-    package: function iotRulesPackage ({ arc, cloudformation: cfn, /* stage = 'staging',*/ inventory }) {
-        if (arc.rules) {
-            const cwd = inventory.inv._project.src;
-            // modify main role to allow lambdas to publish to iot topics
-            cfn.Resources.Role.Properties.Policies.push({
-                PolicyName: 'ArcIoTDataPolicy',
-                PolicyDocument: {
-                    Statement: [ {
-                        Effect: 'Allow',
-                        Action: [
-                            'iot:Connect',
-                            'iot:Publish'
-                        ],
-                        Resource: '*'
-                    } ]
-                }
-            });
-            arc.rules.forEach(rule => {
-                let ruleName = rule.shift();
-                let code = join(cwd, 'src', 'rules', ruleName);
-                let query = rule.join(' ').trim();
-                let [ functionName, functionDefn ] = createLambdaJSON({ inventory, src: code });
-                functionDefn.Properties.Events[`${functionName}PluginEvent`] = {
-                    Type: 'IoTRule',
-                    Properties: {
-                        AwsIotSqlVersion: '2016-03-23',
-                        Sql: query
-                    }
-                };
-                cfn.Resources[functionName] = functionDefn;
-            });
-        }
-        return cfn;
-    },
-    pluginFunctions: function ioTRulesLambdas ({ arc, inventory }) {
+    functions: function ioTRulesLambdas ({ arc, inventory }) {
         if (!arc.rules) return [];
         const cwd = inventory.inv._project.src;
         return arc.rules.map((rule) => {
@@ -53,8 +17,41 @@ module.exports = {
             };
         });
     },
+    package: function iotRulesPackage ({ arc, cloudformation: cfn, createFunction, /* stage = 'staging',*/ inventory }) {
+        if (!arc.rules) return cfn;
+        const cwd = inventory.inv._project.src;
+        // modify main role to allow lambdas to publish to iot topics
+        cfn.Resources.Role.Properties.Policies.push({
+            PolicyName: 'ArcIoTDataPolicy',
+            PolicyDocument: {
+                Statement: [ {
+                    Effect: 'Allow',
+                    Action: [
+                        'iot:Connect',
+                        'iot:Publish'
+                    ],
+                    Resource: '*'
+                } ]
+            }
+        });
+        arc.rules.forEach(rule => {
+            let ruleName = rule.shift();
+            let code = join(cwd, 'src', 'rules', ruleName);
+            let query = rule.join(' ').trim();
+            let [ functionName, functionDefn ] = createFunction({ inventory, src: code });
+            functionDefn.Properties.Events[`${functionName}PluginEvent`] = {
+                Type: 'IoTRule',
+                Properties: {
+                    AwsIotSqlVersion: '2016-03-23',
+                    Sql: query
+                }
+            };
+            cfn.Resources[functionName] = functionDefn;
+        });
+        return cfn;
+    },
     sandbox: {
-        start: function IoTRulesServiceStart ({ arc, inventory /* , services */ }, callback) {
+        start: function IoTRulesServiceStart ({ arc, inventory, invokeFunction /* , services */ }, callback) {
             let rules = module.exports.pluginFunctions({ arc, inventory }).map(rule => rule.src);
             if (rules && rules.length) {
                 // Attach the key listener only once because this plugin's
@@ -62,7 +59,7 @@ module.exports = {
                 // type's another 'i' key, it would trigger the listener again.
                 // So listen to the event once, then at the end of the listener,
                 // re-attach itself once again.
-                process.stdin.once('readable', listener(rules, inventory));
+                process.stdin.once('readable', listener(rules, inventory, invokeFunction));
                 update.status(`IoT Rules Sandbox Service Started, registered ${rules.length} rule(s); press "i" to trigger a rule.`);
             }
             callback();
@@ -73,7 +70,7 @@ module.exports = {
     }
 };
 
-function listener (rules, inventory) {
+function listener (rules, inventory, invokeFunction) {
     const cwd = inventory.inv._project.src;
     return async function IoTRulesKeyListener () {
         let input = String(process.stdin.read());
@@ -106,7 +103,7 @@ function listener (rules, inventory) {
                 process.stdin.setRawMode(true);
                 process.stdin.resume();
             }
-            invokeLambda({ inventory, src: response.rule, payload: response.payload }, function (err) {
+            invokeFunction({ src: response.rule, payload: response.payload }, function (err) {
                 if (err) {
                     update.error(`Error invoking ${response.rule.replace(cwd, '')}!`);
                     update.error(err);
@@ -114,6 +111,6 @@ function listener (rules, inventory) {
             });
         }
         // Re-attach the iot-rules key listener after the lambda is dispatched
-        process.stdin.once('readable', listener(rules, inventory));
+        process.stdin.once('readable', listener(rules, inventory, invokeFunction));
     };
 }

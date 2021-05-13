@@ -1,6 +1,7 @@
 const plugin = require('../');
 const { join } = require('path');
 const inventory = require('@architect/inventory');
+const { createFunction } = require('@architect/package');
 const fs = require('fs-extra');
 const sampleDir = join(__dirname, '..', 'sample-app');
 const appDir = join(__dirname, 'tmp');
@@ -28,7 +29,7 @@ describe('plugin packaging function', () => {
             const cfn = {};
             const app = { ...arc };
             delete app.rules;
-            const output = plugin.package({ arc: app, cloudformation: cfn });
+            const output = plugin.package({ arc: app, cloudformation: cfn, createFunction });
             expect(JSON.stringify(output)).toBe('{}');
         });
     });
@@ -44,7 +45,7 @@ describe('plugin packaging function', () => {
                 }
             };
             const app = { ...arc };
-            const output = plugin.package({ arc: app, cloudformation, inventory: inv, stage: 'staging' });
+            const output = plugin.package({ arc: app, cloudformation, createFunction, inventory: inv, stage: 'staging' });
             expect(output.Resources.RulesTestPluginLambda).toBeDefined();
             expect(output.Resources.RulesTestPluginLambda.Properties.Events.RulesTestPluginLambdaPluginEvent).toBeDefined();
             expect(output.Resources.RulesTestPluginLambda.Properties.Events.RulesTestPluginLambdaPluginEvent.Type).toEqual('IoTRule');
