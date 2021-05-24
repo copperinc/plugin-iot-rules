@@ -1,6 +1,6 @@
 {
   "name": "@copper/plugin-iot-rules",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Architect (arc.codes) serverless framework plugin that defines IoT Topic Rules and associated Lambdas triggered by the Rules",
   "main": "index.js",
   "scripts": {
