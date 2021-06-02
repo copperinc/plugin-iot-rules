@@ -52,7 +52,7 @@ module.exports = {
     },
     sandbox: {
         start: function IoTRulesServiceStart ({ arc, inventory, invokeFunction /* , services */ }, callback) {
-            let rules = module.exports.pluginFunctions({ arc, inventory }).map(rule => rule.src);
+            let rules = module.exports.functions({ arc, inventory }).map(rule => rule.src);
             if (rules && rules.length) {
                 // Attach the key listener only once because this plugin's
                 // sandbox hook requires interactive user input, and if the user
